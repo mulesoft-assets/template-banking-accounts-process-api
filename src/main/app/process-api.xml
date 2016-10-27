@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+      xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns:spring="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:context="http://www.springframework.org/schema/context"
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smtp/current/mule-smtp.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+
+    <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
+    <apikit:config name="apiConfig" raml="template-banking-accounts-process-api.raml" consoleEnabled="false" doc:name="Router">
+        <apikit:flow-mapping resource="/accounts/aggregate" action="get" flow-ref="get:/accounts/aggregate:api-config"/>
+    </apikit:config>
+
+    <context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
+    <http:request-config name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+    <http:request-config name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+
+    <flow name="api-main">
+        <http:listener config-ref="httpListenerConfig" path="/api/*" doc:name="HTTP"/>
+        <apikit:router config-ref="apiConfig" doc:name="APIkit Router"/>
+        <exception-strategy ref="apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy"/>
+    </flow>
+    <flow name="get:/accounts/aggregate:api-config">
+        <set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
+        <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user" method="GET" doc:name="Get User by SSN from system A">
+            <http:request-builder>
+                <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Get User ID from the response">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
+        </dw:transform-message>
+        <choice doc:name="Does User exist in system A?">
+            <when expression="">
+                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user/{id}/account" method="GET" doc:name="Get Accounts from system A">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[payload]"/>
+                    </http:request-builder>
+                </http:request>
+            </when>
+            <otherwise>
+                <logger message="User does not exist in system A." level="INFO" doc:name="Log 'User does not exist in system A'"/>
+            </otherwise>
+        </choice>
+        <dw:transform-message doc:name="Save response into accountsFromA variable">
+            <dw:set-variable variableName="accountsFromA"><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-variable>
+        </dw:transform-message>
+        <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user" method="GET" doc:name="Get User by SSN from system B">
+            <http:request-builder>
+                <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Get User ID from the response">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
+        </dw:transform-message>
+        <choice doc:name="Does User exist in system B?">
+            <when expression="">
+                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user/{id}/account" method="GET" doc:name="Get Accounts from system B">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[payload]"/>
+                    </http:request-builder>
+                </http:request>
+            </when>
+            <otherwise>
+                <logger message="User does not exist in system B." level="INFO" doc:name="Log 'User does not exist in system B'"/>
+            </otherwise>
+        </choice>
+        <dw:transform-message doc:name="Prepare JSON output">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+(payload when (payload != null) otherwise []) 
+++ (flowVars.accountsFromA when (flowVars.accountsFromA != null) otherwise [])]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="get:/transactions/aggregate:api-config">
+        <set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
+        <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user" method="GET" doc:name="Get User by SSN from system A">
+        </http:request>
+        <dw:transform-message doc:name="Get User ID from the response">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
+        </dw:transform-message>
+        <choice doc:name="Does User exist in system A?">
+            <when expression="">
+                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user/{id}/transcation" method="GET" doc:name="Get Transactions from system A">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[payload]"/>
+                    </http:request-builder>
+                </http:request>
+            </when>
+            <otherwise>
+                <logger message="User does not exist in system A." level="INFO" doc:name="Log 'User does not exist in system A'"/>
+            </otherwise>
+        </choice>
+        <dw:transform-message doc:name="Save response into transactionsFromA variable">
+            <dw:set-variable variableName="transactionsFromA"><![CDATA[%dw 1.0
+%output application/java
+---
+payload]]></dw:set-variable>
+        </dw:transform-message>
+        <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user" method="GET" doc:name="Get User by SSN from system B">
+            <http:request-builder>
+                <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Get User ID from the response">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
+        </dw:transform-message>
+        <choice doc:name="Does User exist in system B?">
+            <when expression="">
+                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user/{id}/transcation" method="GET" doc:name="Get Transactions from system B">
+                    <http:request-builder>
+                        <http:uri-param paramName="id" value="#[payload]"/>
+                    </http:request-builder>
+                </http:request>
+            </when>
+            <otherwise>
+                <logger message="User does not exist in system B." level="INFO" doc:name="Log 'User does not exist in system B'"/>
+            </otherwise>
+        </choice>
+        <dw:transform-message doc:name="Prepare JSON output">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+(payload when (payload != null) otherwise []) 
+++ (flowVars.transactionsFromA when (flowVars.transactionsFromA != null) otherwise [])]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+
+    <flow name="api-console">
+        <http:listener config-ref="httpListenerConfig" path="/console/*" doc:name="HTTP"/>
+        <apikit:console config-ref="apiConfig" doc:name="APIkit Console"/>
+    </flow>
+
+    <apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>

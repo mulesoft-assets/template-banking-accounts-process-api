@@ -1,0 +1,90 @@
+#%RAML 1.0
+title: template-banking-openbank-raml
+baseUri: localhost:8081/api
+mediaType: [application/json]
+version: v1
+
+traits:
+  transactionSearch: !include traits/transactionSearch.raml
+  accountSearch: !include traits/accountSearch.raml
+  userSearch: !include traits/userSearch.raml
+      
+types: !include dataTypes.raml
+ 
+
+/user:
+  description: Info about all users
+  get:
+    is: [userSearch]
+    responses:
+        200:
+          body:
+            application/json:
+              type: User[]
+              example: !include ./examples/get_user.json
+  
+  /{id}:
+    uriParameters:
+      id:
+        description: Bank user ID
+    get: 
+      responses:
+        200:
+          body:
+            application/json:
+              type: User
+              example: !include ./examples/get_user_id.json
+
+    /transcation:
+      description: Transactions for all accounts
+      get:
+        is: [transactionSearch]
+        responses:
+          200:
+            body:
+              application/json:
+                type: Transaction[]
+
+
+    /account:
+      get:
+        responses:
+          200:
+            body:
+              application/json:
+                type: Account[]
+                example: !include ./examples/get_account.json
+
+/account:
+  get:
+    is: [accountSearch]      
+    responses:
+      200:
+        body:
+          application/json:
+            type: Account[]
+            example: !include ./examples/get_account.json
+            
+  /{id}:
+    uriParameters:
+      id: 
+        description: Account ID
+
+    get:
+      queryParameters:
+      responses:
+        200:
+          body:
+            application/json:
+              type: Account
+              example: !include ./examples/get_account_id.json
+    
+    /transaction:
+      get:
+        is: [transactionSearch]
+        responses:
+          200:
+            body:
+              application/json:
+                type: Transaction[]
+                example: !include ./examples/get_transactions.json
