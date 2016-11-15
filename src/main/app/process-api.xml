@@ -19,6 +19,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
     <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
     <apikit:config name="apiConfig" raml="template-banking-accounts-process-api.raml" consoleEnabled="false" doc:name="Router">
         <apikit:flow-mapping resource="/accounts/aggregate" action="get" flow-ref="get:/accounts/aggregate:api-config"/>
+        <apikit:flow-mapping resource="/transactions/aggregate" action="get" flow-ref="get:/transactions/aggregate:api-config"/>
     </apikit:config>
 
     <context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
@@ -48,7 +49,7 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
         </dw:transform-message>
         <choice doc:name="Does User exist in system A?">
-            <when expression="">
+            <when expression="payload != null">
                 <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user/{id}/account" method="GET" doc:name="Get Accounts from system A">
                     <http:request-builder>
                         <http:uri-param paramName="id" value="#[payload]"/>
@@ -77,7 +78,7 @@ payload]]></dw:set-variable>
 payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
         </dw:transform-message>
         <choice doc:name="Does User exist in system B?">
-            <when expression="">
+            <when expression="payload != null">
                 <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user/{id}/account" method="GET" doc:name="Get Accounts from system B">
                     <http:request-builder>
                         <http:uri-param paramName="id" value="#[payload]"/>
@@ -107,7 +108,7 @@ payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
 payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
         </dw:transform-message>
         <choice doc:name="Does User exist in system A?">
-            <when expression="">
+            <when expression="payload != null">
                 <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/user/{id}/transcation" method="GET" doc:name="Get Transactions from system A">
                     <http:request-builder>
                         <http:uri-param paramName="id" value="#[payload]"/>
@@ -136,7 +137,7 @@ payload]]></dw:set-variable>
 payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
         </dw:transform-message>
         <choice doc:name="Does User exist in system B?">
-            <when expression="">
+            <when expression="payload != null">
                 <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/user/{id}/transcation" method="GET" doc:name="Get Transactions from system B">
                     <http:request-builder>
                         <http:uri-param paramName="id" value="#[payload]"/>
