@@ -12,7 +12,7 @@ traits:
 types: !include dataTypes.raml
  
 
-/user:
+/users:
   description: Info about all users
   get:
     is: [userSearch]
@@ -21,7 +21,7 @@ types: !include dataTypes.raml
           body:
             application/json:
               type: User[]
-              example: !include ./examples/get_user.json
+              example: !include ./examples/get_users.json
   
   /{id}:
     uriParameters:
@@ -33,9 +33,9 @@ types: !include dataTypes.raml
           body:
             application/json:
               type: User
-              example: !include ./examples/get_user_id.json
+              example: !include ./examples/get_users_id.json
 
-    /transcation:
+    /transactions:
       description: Transactions for all accounts
       get:
         is: [transactionSearch]
@@ -44,18 +44,18 @@ types: !include dataTypes.raml
             body:
               application/json:
                 type: Transaction[]
+                example: !include ./examples/get_transactions.json
 
-
-    /account:
+    /accounts:
       get:
         responses:
           200:
             body:
               application/json:
                 type: Account[]
-                example: !include ./examples/get_account.json
+                example: !include ./examples/get_accounts.json
 
-/account:
+/accounts:
   get:
     is: [accountSearch]      
     responses:
@@ -63,7 +63,7 @@ types: !include dataTypes.raml
         body:
           application/json:
             type: Account[]
-            example: !include ./examples/get_account.json
+            example: !include ./examples/get_accounts.json
             
   /{id}:
     uriParameters:
@@ -77,9 +77,9 @@ types: !include dataTypes.raml
           body:
             application/json:
               type: Account
-              example: !include ./examples/get_account_id.json
+              example: !include ./examples/get_accounts_id.json
     
-    /transaction:
+    /transactions:
       get:
         is: [transactionSearch]
         responses:
