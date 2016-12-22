@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" xmlns="http://www.mulesoft.org/schema/mule/core"
-      xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
-      xmlns:http="http://www.mulesoft.org/schema/mule/http"
-      xmlns:spring="http://www.springframework.org/schema/beans"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:context="http://www.springframework.org/schema/context"
-      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" 
+	xmlns:smtp="http://www.mulesoft.org/schema/mule/smtp" 
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation" 
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio" 
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+    xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+    xmlns:http="http://www.mulesoft.org/schema/mule/http"
+    xmlns:spring="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd
@@ -17,16 +23,19 @@ http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smt
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 
     <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
+    
     <apikit:config name="apiConfig" raml="template-banking-accounts-process-api.raml" consoleEnabled="false" doc:name="Router">
         <apikit:flow-mapping resource="/accounts/aggregate" action="get" flow-ref="get:/accounts/aggregate:api-config"/>
         <apikit:flow-mapping resource="/transactions/aggregate" action="get" flow-ref="get:/transactions/aggregate:api-config"/>
     </apikit:config>
 
     <context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
-    <http:request-config name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+   
+    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
         <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
     </http:request-config>
-    <http:request-config name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+   
+    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
         <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
     </http:request-config>
 
@@ -35,6 +44,12 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
         <apikit:router config-ref="apiConfig" doc:name="APIkit Router"/>
         <exception-strategy ref="apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy"/>
     </flow>
+    
+    <flow name="api-console">
+        <http:listener config-ref="httpListenerConfig" path="/console/*" doc:name="HTTP"/>
+        <apikit:console config-ref="apiConfig" doc:name="APIkit Console"/>
+    </flow>
+    
     <flow name="get:/accounts/aggregate:api-config">
         <set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
         <scatter-gather doc:name="Scatter-Gather">
@@ -43,7 +58,9 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
                 <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+
                     </http:request-builder>
+                    <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 <dw:transform-message doc:name="Get User ID from the response">
                     <dw:set-payload><![CDATA[%dw 1.0
@@ -74,7 +91,9 @@ payload when (payload != null) otherwise []]]></dw:set-payload>
                 <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system B">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+
                     </http:request-builder>
+                    <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 <dw:transform-message doc:name="Get User ID from the response">
                     <dw:set-payload><![CDATA[%dw 1.0
@@ -101,6 +120,7 @@ payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
 payload when (payload != null) otherwise []]]></dw:set-payload>
                 </dw:transform-message>
             </processor-chain>
+<!-- 		<set-payload value="#[[]]" doc:name="Set Payload"></set-payload> -->
         </scatter-gather>
         <dw:transform-message doc:name="Prepare JSON output">
             <dw:set-payload><![CDATA[%dw 1.0
@@ -116,7 +136,9 @@ payload]]></dw:set-payload>
         <scatter-gather doc:name="Scatter-Gather">
             <custom-aggregation-strategy class="org.mule.templates.transformers.MergeAggregationStrategy"/>
             <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A"/>
+                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
+                    <http:success-status-code-validator values="200,404"/>
+                </http:request>
                 <dw:transform-message doc:name="Get User ID from the response">
                     <dw:set-payload><![CDATA[%dw 1.0
 %output application/java
@@ -146,7 +168,9 @@ payload when (payload != null) otherwise []]]></dw:set-payload>
                 <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system B">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+
                     </http:request-builder>
+                    <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 <dw:transform-message doc:name="Get User ID from the response">
                     <dw:set-payload><![CDATA[%dw 1.0
@@ -184,10 +208,6 @@ payload]]></dw:set-payload>
 
     </flow>
 
-    <flow name="api-console">
-        <http:listener config-ref="httpListenerConfig" path="/console/*" doc:name="HTTP"/>
-        <apikit:console config-ref="apiConfig" doc:name="APIkit Console"/>
-    </flow>
 
     <apikit:mapping-exception-strategy name="apiKitGlobalExceptionMapping">
         <apikit:mapping statusCode="404">
