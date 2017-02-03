@@ -1,0 +1,11 @@
+#%RAML 1.0 DataType
+
+#This file is located at dataTypes/Transaction.raml
+
+type: object
+properties:
+  uuid: string
+  id: string
+  this_account: Account
+  other_account: Account
+  details: TransactionDetails

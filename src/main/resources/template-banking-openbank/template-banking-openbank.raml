@@ -1,90 +1,134 @@
 #%RAML 1.0
 title: template-banking-openbank-raml
-baseUri: localhost:8081/api
-mediaType: [application/json]
 version: v1
+baseUri: http://localhost:8081
+
+types:
+  Account: !include dataTypes/Account.raml
+  AccountOwner: !include dataTypes/AccountOwner.raml
+  Address: !include dataTypes/Address.raml
+  Bank: !include dataTypes/Bank.raml
+  Metadata: !include dataTypes/Metadata.raml
+  Money: !include dataTypes/Money.raml
+  Transaction: !include dataTypes/Transaction.raml
+  TransactionDetails: !include dataTypes/TransactionDetails.raml
+  User: !include dataTypes/User.raml
+  ErrorResponse: !include dataTypes/ErrorResponse.raml
+  SuccessResponse: !include dataTypes/SuccessResponse.raml
 
 traits:
   transactionSearch: !include traits/transactionSearch.raml
   accountSearch: !include traits/accountSearch.raml
   userSearch: !include traits/userSearch.raml
-      
-types: !include dataTypes.raml
- 
 
 /users:
-  description: Info about all users
+  displayName: Users
+  description: |
+    Working with users:
+    * Retrieving all users
+    
   get:
+    description: Retrieve all the Users according to the filtering.
     is: [userSearch]
     responses:
         200:
           body:
             application/json:
               type: User[]
-              example: !include ./examples/get_users.json
+              example: !include examples/get_user.json
   
   /{id}:
+    displayName: User ID
+    description: |
+      Working with users:
+      * Retrieving specific user
     uriParameters:
       id:
+        type: string
+        example: "8f19cb50-3f57-4d38-b1ab-b7529d98df6b"
         description: Bank user ID
     get: 
+      description: Get User by ID
       responses:
         200:
           body:
             application/json:
               type: User
-              example: !include ./examples/get_users_id.json
+              example: !include examples/get_user_id.json
 
     /transactions:
-      description: Transactions for all accounts
+      displayName: Transactions
+      description: |
+        Working with Transactions 
+        * Retrieving all user's transaction
       get:
+        description: Retrieve all user's transactions according to the filtering.
         is: [transactionSearch]
         responses:
           200:
             body:
               application/json:
                 type: Transaction[]
-                example: !include ./examples/get_transactions.json
-
+                example: !include examples/get_transactions.json
     /accounts:
+      displayName: Accounts
+      description: |
+        Working with Accounts 
+        * Retrieving all user's accounts
       get:
+        description: Retrieve all user's accounts according to the filtering.
         responses:
           200:
             body:
               application/json:
                 type: Account[]
-                example: !include ./examples/get_accounts.json
+                example: !include examples/get_account.json
 
 /accounts:
+  description: |
+    Working with Accounts 
+    * Retrieving all accounts
   get:
+    description: Retrieve all accounts according to the filtering.
     is: [accountSearch]      
     responses:
       200:
         body:
           application/json:
             type: Account[]
-            example: !include ./examples/get_accounts.json
+            example: !include examples/get_account.json
             
   /{id}:
+    displayName: Account ID
+    description: |
+      Working with accounts:
+      * Retrieving specific account
     uriParameters:
       id: 
         description: Account ID
+        type: string | integer
 
     get:
+      description: Get account by id
       queryParameters:
       responses:
         200:
           body:
             application/json:
               type: Account
-              example: !include ./examples/get_accounts_id.json
+              example: !include examples/get_account_id.json
     
     /transactions:
+      displayName: Account ID
+      description: |
+        Working with transactions:
+        * Retrieving account's transactions
       get:
+        description: Retrieve all account's transactions according to the filtering.
         is: [transactionSearch]
         responses:
           200:
             body:
               application/json:
                 type: Transaction[]
-                example: !include ./examples/get_transactions.json
+                example: !include examples/get_transactions.json

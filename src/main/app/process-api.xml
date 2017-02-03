@@ -35,11 +35,11 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
 
     <context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
    
-    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+    <http:request-config name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
         <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
     </http:request-config>
    
-    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+    <http:request-config name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
         <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
     </http:request-config>
 

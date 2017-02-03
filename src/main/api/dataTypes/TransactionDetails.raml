@@ -1,0 +1,13 @@
+#%RAML 1.0 DataType
+
+#This file is located at dataTypes/TransactionDetails.raml
+
+type: object
+properties:
+  type: 
+    enum: [atm, charge, check, deposit, online, pos, sepa_direct_transfer, withdrawal]
+  label: string
+  posted: datetime
+  completed: datetime
+  value: Money
+  new_balance: Money
