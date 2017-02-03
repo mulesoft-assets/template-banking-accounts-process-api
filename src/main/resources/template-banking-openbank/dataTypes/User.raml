@@ -1,0 +1,18 @@
+#%RAML 1.0 DataType
+
+#This file is located at dataTypes/User.raml
+
+type: object
+properties:
+  id: string
+  prefix?: string[]
+  first_name: string
+  middle_name?: string
+  last_name: string
+  suffix?: string[]
+  address: Address
+  display_name?: string
+  phone: string
+  email: string
+  ssn: string
+  date_of_birth: date-only

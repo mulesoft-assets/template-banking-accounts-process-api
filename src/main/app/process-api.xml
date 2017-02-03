@@ -31,6 +31,16 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
         <apikit:flow-mapping resource="/transactions/aggregate" action="get" flow-ref="get:/transactions/aggregate:api-config"/>
     </apikit:config>
 
+    <context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
+   
+    <http:request-config name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+   
+    <http:request-config name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+
     <flow name="api-main">
         <http:listener config-ref="httpListenerConfig" path="/api/*" doc:name="HTTP"/>
         <apikit:router config-ref="apiConfig" doc:name="APIkit Router"/>
