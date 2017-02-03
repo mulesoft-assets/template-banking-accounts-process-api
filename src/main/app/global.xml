@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.8.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+	<http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
+	
+	<context:property-placeholder location="mule.${mule.env}.properties,common.properties" />
+   
+    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_A_Configuration" host="${http.openbank.system.a.host}" port="${http.openbank.system.a.port}" basePath="${http.openbank.system.a.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+   
+    <http:request-config protocol="HTTP" name="HTTP_Request_OpenBank_System_B_Configuration" host="${http.openbank.system.b.host}" port="${http.openbank.system.b.port}" basePath="${http.openbank.system.b.basePath}" responseTimeout="30000" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="template-banking-openbank/template-banking-openbank.raml"/>
+    </http:request-config>
+    
+</mule>
