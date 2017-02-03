@@ -20,7 +20,7 @@ Please review the terms of the license before downloading and using this templat
 # Use Case <a name="usecase"/>
 
 This API is part of the API Led connectivity Banking accelerator and is used by the Experience layer APIs to aggregate information about user's accounts (checking, savings) and associated transactions.
-It is consumed by [Banking AISP Experience API](https://github.com/mulesoft/template-banking-aisp-experience-api).
+It is consumed by [Banking AISP Experience API](https://github.com/mulesoft/template-banking-aisp-experience-api) and [Banking AnypointBank Experience API](https://github.com/mulesoft/template-banking-anypointbank-experience-api) for getting internal accounts and transactions of user.
 
 # Considerations <a name="considerations"/>
 
@@ -29,8 +29,7 @@ To make this Anypoint Template run, there are certain preconditions that must be
 ## APIs security considerations <a name="apissecurityconsiderations"/>
 This Process API is meant to be deployed to CloudHub and managed using the API Platform Manager.
 
-### Exposing external endpoints with HTTPS
-+ It is meant to be consumed by third party applications using HTTPS
+In order to use this API, you must apply and configure [Client ID enforcement policy](https://docs.mulesoft.com/api-manager/client-id-based-policies#client-id-enforcement-policy) with Basic Authenication as the origin of the credentials. Follow the instructions on the above link on how to configure the policy. Consuming APIs needs to request `client ID` and `client secret` from Banking accounts process API.
 
 # Run it! <a name="runit"/>
 Simple steps to get Banking Accounts Process API running.
@@ -85,13 +84,18 @@ Detailed list with examples:
 ### Application properties
 + http.port `8081`
 
-#### Process API calls configuration
+### API auto-discovery
++ api.id `123456`
++ api.name `accounts-process-api`
++ api.version `v1`
+
+### HTTP System A configuration
 + http.openbank.system.a.host `checking.example.com`
 + http.openbank.system.a.port `80`
 + http.openbank.system.a.basePath `/api`
 
-# HTTP System B configuration
+### HTTP System B configuration
 + http.openbank.system.b.host `savings.example.com`
-+ http.openbank.system.b.port `8083`
++ http.openbank.system.b.port `80`
 + http.openbank.system.b.basePath `/api`
 

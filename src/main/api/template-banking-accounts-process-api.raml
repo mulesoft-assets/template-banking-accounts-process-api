@@ -1,13 +1,23 @@
 #%RAML 1.0
 title: Banking Accounts Process API
 version: v1.0
-types: !include dataTypes.raml
 baseUri: http://localhost:8081/api
 
+types:
+  Account: !include dataTypes/Account.raml
+  AccountOwner: !include dataTypes/AccountOwner.raml
+  Address: !include dataTypes/Address.raml
+  Bank: !include dataTypes/Bank.raml
+  Metadata: !include dataTypes/Metadata.raml
+  Money: !include dataTypes/Money.raml
+  Transaction: !include dataTypes/Transaction.raml
+  TransactionDetails: !include dataTypes/TransactionDetails.raml
+  User: !include dataTypes/User.raml
+
 /accounts/aggregate:
-  displayName: aggregateAccounts
+  displayName: Aggregate user accounts
   get:
-    description: Return aggregated Accounts by user SSN  
+    description: Return aggregated Accounts of user specified by SSN  
     queryParameters:
       ssn:
         type: string | integer
@@ -19,9 +29,9 @@ baseUri: http://localhost:8081/api
             type: Account[]
             example: !include ./examples/get_accounts_aggregate_example.json
 /transactions/aggregate:
-  displayName: aggregateTransactions
+  displayName: Aggregate user transactions
   get:
-    description: Return aggregated Transactions by user SSN  
+    description: Return aggregated Transactions of user specified by SSN  
     queryParameters:
       ssn:
         type: string | integer
