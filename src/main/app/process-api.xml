@@ -25,8 +25,6 @@ http://www.mulesoft.org/schema/mule/smtp http://www.mulesoft.org/schema/mule/smt
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
 
 	<api-platform-gw:api id="${api.id}" apiName="${api.name}" version="${api.version}" flowRef="api-main" doc:name="API Autodiscovery" create="true" />
-
-    <http:listener-config name="httpListenerConfig" host="0.0.0.0" port="${http.port}" doc:name="HTTP Listener Configuration"/>
     
     <apikit:config name="apiConfig" raml="template-banking-accounts-process-api.raml" consoleEnabled="false" doc:name="Router">
         <apikit:flow-mapping resource="/accounts/aggregate" action="get" flow-ref="get:/accounts/aggregate:api-config"/>
@@ -55,161 +53,13 @@ http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mu
     </flow>
     
     <flow name="get:/accounts/aggregate:api-config">
-        <set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
-        <scatter-gather doc:name="Scatter-Gather">
-            <custom-aggregation-strategy class="org.mule.templates.transformers.MergeAggregationStrategy"/>
-            <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
-                    <http:request-builder>
-                        <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
-
-                    </http:request-builder>
-                    <http:success-status-code-validator values="200,404"/>
-                </http:request>
-                <dw:transform-message doc:name="Get User ID from the response">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
-                </dw:transform-message>
-                <choice doc:name="Does User exist in system A?">
-                    <when expression="payload != null">
-                        <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users/{id}/accounts" method="GET" doc:name="Get Accounts from system A">
-                            <http:request-builder>
-                                <http:uri-param paramName="id" value="#[payload]"/>
-                            </http:request-builder>
-                        </http:request>
-                    </when>
-                    <otherwise>
-                        <logger message="User does not exist in system A." level="INFO" doc:name="Log 'User does not exist in system A'"/>
-                    </otherwise>
-                </choice>
-                <dw:transform-message doc:name="Transform to Java object">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload when (payload != null) otherwise []]]></dw:set-payload>
-                </dw:transform-message>
-            </processor-chain>
-            <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system B">
-                    <http:request-builder>
-                        <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
-
-                    </http:request-builder>
-                    <http:success-status-code-validator values="200,404"/>
-                </http:request>
-                <dw:transform-message doc:name="Get User ID from the response">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
-                </dw:transform-message>
-                <choice doc:name="Does User exist in system B?">
-                    <when expression="payload != null">
-                        <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users/{id}/accounts" method="GET" doc:name="Get Accounts from system B">
-                            <http:request-builder>
-                                <http:uri-param paramName="id" value="#[payload]"/>
-                            </http:request-builder>
-                        </http:request>
-                    </when>
-                    <otherwise>
-                        <logger message="User does not exist in system B." level="INFO" doc:name="Log 'User does not exist in system B'"/>
-                    </otherwise>
-                </choice>
-                <dw:transform-message doc:name="Transform to Java object">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload when (payload != null) otherwise []]]></dw:set-payload>
-                </dw:transform-message>
-            </processor-chain>
-<!-- 		<set-payload value="#[[]]" doc:name="Set Payload"></set-payload> -->
-        </scatter-gather>
-        <dw:transform-message doc:name="Prepare JSON output">
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/json
----
-payload]]></dw:set-payload>
-        </dw:transform-message>
-        <logger message="Process GET aggregated accounts finished" level="INFO" doc:name="Log success"/>
+        <flow-ref name="getAccountsFlow" doc:name="getAccountsFlow"/>
+        
 
     </flow>
     <flow name="get:/transactions/aggregate:api-config">
-        <set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
-        <scatter-gather doc:name="Scatter-Gather">
-            <custom-aggregation-strategy class="org.mule.templates.transformers.MergeAggregationStrategy"/>
-            <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
-                    <http:success-status-code-validator values="200,404"/>
-                </http:request>
-                <dw:transform-message doc:name="Get User ID from the response">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
-                </dw:transform-message>
-                <choice doc:name="Does User exist in system A?">
-                    <when expression="payload != null">
-                        <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users/{id}/transactions" method="GET" doc:name="Get Transactions from system A">
-                            <http:request-builder>
-                                <http:uri-param paramName="id" value="#[payload]"/>
-                            </http:request-builder>
-                        </http:request>
-                    </when>
-                    <otherwise>
-                        <logger message="User does not exist in system A." level="INFO" doc:name="Log 'User does not exist in system A'"/>
-                    </otherwise>
-                </choice>
-                <dw:transform-message doc:name="Transform to Java object">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload when (payload != null) otherwise []]]></dw:set-payload>
-                </dw:transform-message>
-            </processor-chain>
-            <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system B">
-                    <http:request-builder>
-                        <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
-
-                    </http:request-builder>
-                    <http:success-status-code-validator values="200,404"/>
-                </http:request>
-                <dw:transform-message doc:name="Get User ID from the response">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload.id[0] when ((sizeOf payload)>0) otherwise null]]></dw:set-payload>
-                </dw:transform-message>
-                <choice doc:name="Does User exist in system B?">
-                    <when expression="payload != null">
-                        <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users/{id}/transactions" method="GET" doc:name="Get Transactions from system B">
-                            <http:request-builder>
-                                <http:uri-param paramName="id" value="#[payload]"/>
-                            </http:request-builder>
-                        </http:request>
-                    </when>
-                    <otherwise>
-                        <logger message="User does not exist in system B." level="INFO" doc:name="Log 'User does not exist in system B'"/>
-                    </otherwise>
-                </choice>
-                <dw:transform-message doc:name="Transform to Java object">
-                    <dw:set-payload><![CDATA[%dw 1.0
-%output application/java
----
-payload when (payload != null) otherwise []]]></dw:set-payload>
-                </dw:transform-message>
-            </processor-chain>
-        </scatter-gather>
-        <dw:transform-message doc:name="Prepare JSON output">
-            <dw:set-payload><![CDATA[%dw 1.0
-%output application/json
----
-payload]]></dw:set-payload>
-        </dw:transform-message>
-        <logger message="Process GET aggregated transactions finished" level="INFO" doc:name="Log success"/>
-
+        <flow-ref name="getTransactionsFlow" doc:name="getTransactionsFlow"/>
+        
     </flow>
 
 
