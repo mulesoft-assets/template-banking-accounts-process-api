@@ -109,9 +109,10 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
             </processor-chain>
             
             <processor-chain>
-                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/users" method="GET" doc:name="Get Transactions by SSN from system B">
+                <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/accounts/{id}/transactions" method="GET" doc:name="Get Transactions by SSN from system B">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+                        <http:uri-param paramName="id" value="1"/>
                     </http:request-builder>
                     <http:success-status-code-validator values="200,404"/>
                 </http:request>
