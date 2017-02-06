@@ -80,6 +80,9 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
             
             <processor-chain>
                 <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
+                    <http:request-builder>
+                        <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+                    </http:request-builder>
                     <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 
