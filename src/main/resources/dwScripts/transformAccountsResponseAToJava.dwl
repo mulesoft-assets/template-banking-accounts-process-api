@@ -5,6 +5,7 @@
 (payload map ((payload01 , indexOfPayload01) -> {
 	IBAN: payload01.IBAN,
 	available_balance: payload01.available_balance,
+	balance: payload01.balance,
 	bank_id: payload01.bank_id,
 	id: payload01.id,
 	label: payload01.label,
