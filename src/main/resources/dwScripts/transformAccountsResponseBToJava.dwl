@@ -13,4 +13,4 @@
 	swift_bic: payload01.swift_bic,
 	type: payload01.type,
 	resource_url: resourceUrl
-})) when (payload != null) otherwise []
+})) when (inboundProperties.'http.status' == 200) otherwise []
