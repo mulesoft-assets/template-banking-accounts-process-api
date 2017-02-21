@@ -1,6 +1,6 @@
 %dw 1.0
 %output application/java
-%var resourceUrl="http://" ++ p('http.openbank.system.a.host') ++ ":" ++ p('http.openbank.system.a.port') ++ p('http.openbank.system.a.basePath') ++ "/users/" ++ flowVars.userId ++ "/transactions" 
+%var resourceUrl="http://" ++ p('http.openbank.system.a.host') ++ ":" ++ p('http.openbank.system.a.port') ++ p('http.openbank.system.a.basePath') ++ "/users/" ++ flowVars.userId ++ "/transactions" when (payload != null) otherwise null
 ---
 (payload map ((payload01 , indexOfPayload01) -> {
 	uuid: payload01.uuid,
