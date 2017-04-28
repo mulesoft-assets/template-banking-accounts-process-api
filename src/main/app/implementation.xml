@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
@@ -9,7 +9,8 @@
 http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
     
     <flow name="getAccountsFlow">
     	<set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
@@ -21,11 +22,13 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users" method="GET" doc:name="Get User by SSN from system A">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+
                     </http:request-builder>
                     <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 
                 <dw:transform-message doc:name="Get User ID from the response">
+                <dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/getUserIdFromAccountsSystemResponse.dwl"/>
                 </dw:transform-message>
                 
@@ -36,29 +39,34 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                         <http:request config-ref="HTTP_Request_OpenBank_System_A_Configuration" path="/users/{id}/accounts" method="GET" doc:name="Get Accounts from system A">
                             <http:request-builder>
                                 <http:uri-param paramName="id" value="#[payload]"/>
+
                             </http:request-builder>
                         </http:request>
+
                     </when>
                     
                     <otherwise>
                         <logger message="User does not exist in system A." level="INFO" doc:name="Log 'User does not exist in system A'"/>
                     </otherwise>
                 </choice>
-                
                 <dw:transform-message doc:name="Transform to Java object">
+                <dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/transformAccountsResponseAToJava.dwl"/>
                 </dw:transform-message>
+
             </processor-chain>
             
             <processor-chain>
                 <http:request config-ref="HTTP_Request_OpenBank_System_B_Configuration" path="/accounts" method="GET" doc:name="Get Account by SSN from system B">
                     <http:request-builder>
                         <http:query-param paramName="ssn" value="#[flowVars.ssn]"/>
+
                     </http:request-builder>
                     <http:success-status-code-validator values="200,404"/>
                 </http:request>
                 
                 <dw:transform-message doc:name="Transform to Java object">
+                <dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/transformAccountsResponseBToJava.dwl"/>
                 </dw:transform-message>
             </processor-chain>
@@ -87,6 +95,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 </http:request>
                 
                 <dw:transform-message doc:name="Get User ID from the response">
+				<dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/getUserIdFromTransactionsSystemResponse.dwl"/>
                 </dw:transform-message>
                 
@@ -107,6 +116,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 </choice>
                 
                 <dw:transform-message doc:name="Transform to Java object">
+                <dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/transformTransactionsResponseAToJava.dwl"/>
                 </dw:transform-message>
             </processor-chain>
@@ -121,6 +131,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
                 </http:request>
                 
                 <dw:transform-message doc:name="Transform to Java object">
+                <dw:input-payload mimeType="application/json"/>
                     <dw:set-payload resource="classpath:dwScripts/transformTransactionsResponseBToJava.dwl"/>
                 </dw:transform-message>
             </processor-chain>
