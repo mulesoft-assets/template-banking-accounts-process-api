@@ -4,6 +4,7 @@ version: v1.0
 baseUri: http://localhost:8081/api
 
 types:
+  SSN: !include dataTypes/SSN.raml
   Account: !include dataTypes/Account.raml
   AccountOwner: !include dataTypes/AccountOwner.raml
   Address: !include dataTypes/Address.raml
@@ -20,8 +21,8 @@ types:
     description: Return aggregated Accounts of user specified by SSN  
     queryParameters:
       ssn:
-        type: string | integer
-        example: "078-05-1120"
+        type: SSN
+        example: 078-05-1120
     responses:
       200:
         body:
@@ -34,8 +35,8 @@ types:
     description: Return aggregated Transactions of user specified by SSN  
     queryParameters:
       ssn:
-        type: string | integer
-        example: "078-05-1120"
+        type: SSN
+        example: 078-05-1120
     responses:
       200:
         body:
