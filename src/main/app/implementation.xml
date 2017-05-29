@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw"
 	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:spring="http://www.springframework.org/schema/beans" 
@@ -13,7 +13,7 @@ http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd">
     
     <flow name="getAccountsFlow">
-    	<set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
+    	<set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn.replace(&quot;-&quot;, &quot;&quot;)]" doc:name="Set ssn variable"/>
         
         <scatter-gather doc:name="Scatter-Gather">
             <custom-aggregation-strategy class="org.mule.templates.transformers.MergeAggregationStrategy"/>
@@ -81,7 +81,7 @@ http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/jso
     
     <flow name="getTransactionsFlow">
     	
-    	<set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn]" doc:name="Set ssn variable"/>
+    	<set-variable variableName="ssn" value="#[message.inboundProperties.'http.query.params'.ssn.replace(&quot;-&quot;, &quot;&quot;)]" doc:name="Set ssn variable"/>
         
         <scatter-gather doc:name="Scatter-Gather">
             <custom-aggregation-strategy class="org.mule.templates.transformers.MergeAggregationStrategy"/>
