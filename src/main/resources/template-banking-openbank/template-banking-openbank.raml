@@ -4,6 +4,7 @@ version: v1
 baseUri: http://localhost:8081
 
 types:
+  SSN: !include dataTypes/SSN.raml
   Account: !include dataTypes/Account.raml
   AccountOwner: !include dataTypes/AccountOwner.raml
   Address: !include dataTypes/Address.raml
@@ -29,7 +30,11 @@ traits:
     
   get:
     description: Retrieve all the Users according to the filtering.
-    is: [userSearch]
+    queryParameters:
+      ssn:
+        description: SSN number of the specific User
+        type: SSN
+        required: false
     responses:
         200:
           body:
@@ -90,7 +95,11 @@ traits:
     * Retrieving all accounts
   get:
     description: Retrieve all accounts according to the filtering.
-    is: [accountSearch]      
+    queryParameters:
+      ssn:
+        description: SSN number of the specific User
+        type: SSN
+        required: false      
     responses:
       200:
         body:
