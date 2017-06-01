@@ -29,7 +29,7 @@ To make this Anypoint Template run, there are certain preconditions that must be
 ## APIs security considerations <a name="apissecurityconsiderations"/>
 This Process API is meant to be deployed to CloudHub and managed using the API Platform Manager.
 
-In order to use this API, you must apply and configure [Client ID enforcement policy](https://docs.mulesoft.com/api-manager/client-id-based-policies#client-id-enforcement-policy) with Basic Authenication as the origin of the credentials. Follow the instructions on the above link on how to configure the policy. Consuming APIs needs to request `client ID` and `client secret` from Banking accounts process API.
+In order to use this API, you must apply and configure [Client ID enforcement policy](https://docs.mulesoft.com/api-manager/client-id-based-policies#client-id-enforcement-policy) with Basic Authentication as the origin of the credentials. Follow the instructions on the above link on how to configure the policy. Consuming APIs needs to request `client ID` and `client secret` from Banking accounts process API.
 
 # Run it! <a name="runit"/>
 Simple steps to get Banking Accounts Process API running.
