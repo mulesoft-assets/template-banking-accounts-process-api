@@ -24,12 +24,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
     	<dependency>
-            <groupId>org.mule.connectors</groupId>
-            <artifactId>mule-sockets-connector</artifactId>
-            <version>1.1.0</version>
-            <classifier>mule-plugin</classifier>
-        </dependency>
-    	<dependency>
             <groupId>4d302cca-3f9a-4257-8ce4-20cf81a72e47</groupId>
             <artifactId>mule-plugin-banking_as400_system_api</artifactId>
             <version>2.0.1</version>
