@@ -7,7 +7,9 @@
 		<artifactId>templates-tooling-parent-pom</artifactId>
 		<version>2.1.4</version>
 	</parent>
-
+	<properties>
+		<banking.as400.system.api.version>2.0.1</banking.as400.system.api.version>
+	</properties>
 	<artifactId>template-banking-accounts-process-api</artifactId>
 	<version>2.1.1-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
@@ -26,7 +28,7 @@
     	<dependency>
             <groupId>4d302cca-3f9a-4257-8ce4-20cf81a72e47</groupId>
             <artifactId>mule-plugin-banking_as400_system_api</artifactId>
-            <version>2.0.1</version>
+            <version>${banking.as400.system.api.version}</version>
             <classifier>mule-plugin</classifier>
         </dependency>
     </dependencies>
