@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:banking-as400system-api="http://www.mulesoft.org/schema/mule/banking-as400system-api"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/banking-as400system-api http://www.mulesoft.org/schema/mule/banking-as400system-api/current/mule-banking-as400system-api.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<http:listener-config name="banking_accounts_process_api-httpListenerConfig">
+		<http:listener-connection host="0.0.0.0"
+			port="${http.port}" />
+	</http:listener-config>
+	<apikit:config name="banking_accounts_process_api-config"
+		raml="banking_accounts_process_api.raml" outboundHeadersMapName="outboundHeaders"
+		httpStatusVarName="httpStatus" />
+	<http:request-config name="HTTP_Request_OpenBank_System_A_Configuration"
+		doc:name="HTTP Request configuration" doc:id="0a1133f8-080e-49e2-b8d1-9d3a09eae708"
+		basePath="${http.openbank.system.a.basePath}">
+		<http:request-connection host="${http.openbank.system.a.host}"
+			port="${http.openbank.system.a.port}" />
+	</http:request-config>
+	<banking-as400system-api:config name="Banking_AS400_System_API_Config"
+		doc:name="Banking AS400 System API Config" doc:id="149b6adb-abbd-487f-9e14-327c1e148226"
+		property_host="${http.openbank.system.b.host}" property_port="${http.openbank.system.b.port}"
+		property_basePath="${http.openbank.system.b.basePath}" />
+
+	<configuration-properties doc:name="Configuration properties"
+		doc:id="3f8e1fb3-5d4e-4016-a78a-5dc6d213111d" file="mule.${mule.env}.properties" />
+	<configuration-properties doc:name="Configuration properties"
+		doc:id="7a61e8bb-6e38-4be7-b8a7-c9e552ef8db1" file="common.properties" />
+	<global-property doc:name="Global Property" name="mule.env"
+		value="dev" />
+	<api-gateway:autodiscovery apiId="${api.id}" doc:name="API Autodiscovery" doc:id="9fc22769-6c75-42b4-a7be-4a8f8f2dbd7a" flowRef="banking_accounts_process_api-main" />
+		
+	
+</mule>
