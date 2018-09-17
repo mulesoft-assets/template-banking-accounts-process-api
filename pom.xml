@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.mule.templates</groupId>
+		<artifactId>templates-tooling-parent-pom</artifactId>
+		<version>2.1.4</version>
+	</parent>
+	<properties>
+		<banking.as400.system.api.version>2.0.1</banking.as400.system.api.version>
+	</properties>
+	<artifactId>template-banking-accounts-process-api</artifactId>
+	<version>2.1.1-SNAPSHOT</version>
+	<packaging>mule-application</packaging>
+	<name>template-banking-accounts-process-api</name>
+	<dependencies>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-http-connector</artifactId>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-apikit-module</artifactId>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+    	<dependency>
+            <groupId>4d302cca-3f9a-4257-8ce4-20cf81a72e47</groupId>
+            <artifactId>mule-plugin-banking_as400_system_api</artifactId>
+            <version>${banking.as400.system.api.version}</version>
+            <classifier>mule-plugin</classifier>
+        </dependency>
+    </dependencies>
+	<repositories>
+		<repository>
+			<id>anypoint-exchange</id>
+			<name>Anypoint Exchange</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v1/maven</url>
+			<layout>default</layout>
+		</repository>
+		<repository>
+			<id>mulesoft-releases</id>
+			<name>MuleSoft Releases Repository</name>
+			<url>https://repository.mulesoft.org/releases/</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+
+</project>

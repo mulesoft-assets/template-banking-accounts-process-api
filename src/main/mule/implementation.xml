@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:banking-as400system-api="http://www.mulesoft.org/schema/mule/banking-as400system-api"
+	xmlns:banking-payment-process-api="http://www.mulesoft.org/schema/mule/banking-payment-process-api"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+	http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/banking-payment-process-api http://www.mulesoft.org/schema/mule/banking-payment-process-api/current/mule-banking-payment-process-api.xsd
+http://www.mulesoft.org/schema/mule/banking-as400system-api http://www.mulesoft.org/schema/mule/banking-as400system-api/current/mule-banking-as400system-api.xsd">
+
+	<flow name="getAccountsFlow" doc:id="b83ddcce-95a1-4997-a01e-7ac5a2fca166">
+		<ee:transform doc:name="Set ssn variable"
+			doc:id="97d1b92e-2691-4683-afe7-4ee5274007b3">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="ssn"><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams.ssn replace "-" with ""]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather"
+			doc:id="fcac9dd9-da12-49b7-859f-339babaceeb6">
+			<route>
+
+				<http:request method="GET" doc:name="Get User by SSN from system A"
+					doc:id="1414e3a3-5d0e-4685-b233-85e36b644c80" config-ref="HTTP_Request_OpenBank_System_A_Configuration"
+					path="/users">
+					<http:query-params><![CDATA[#[output applicaton/java
+---
+{
+	ssn : vars.ssn
+}]]]></http:query-params>
+				</http:request>
+				<ee:transform doc:name="Get User ID from the response"
+					doc:id="223eb91d-fb62-4232-ac8f-05ba427d69d6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="userID"><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<choice doc:name="Does User exist in system A?" doc:id="cd5bd055-98a7-4246-a271-b386e7c8117c">
+					<when expression="#[sizeOf(payload) != 0]">
+						<http:request method="GET" doc:name="Get Accounts from system A"
+							doc:id="abd04864-e026-4529-91db-84e45161cd88" config-ref="HTTP_Request_OpenBank_System_A_Configuration"
+							path="/users/{id}/accounts">
+							<http:uri-params><![CDATA[#[output applicaton/java
+---
+{
+	id : vars.userID
+}]]]></http:uri-params>
+						</http:request>
+					</when>
+
+					<otherwise>
+						<logger level="INFO" doc:name="Log 'User does not exist in system A'"
+							doc:id="3ece525a-54b0-4e39-9366-c2f5a797a0eb" message="User does not exist in system A." />
+					</otherwise>
+				</choice>
+				<ee:transform doc:name="Transform to Java object"
+					doc:id="c8804ed4-cc79-4900-acef-c431da45816d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var resourceUrl = if (payload != null) "http://" ++ p('http.openbank.system.a.host') ++ ":" ++ p('http.openbank.system.a.port') ++  "/users/" ++ vars.userID ++ "/accounts" else null
+---
+if (payload !=null)
+payload map  ({
+    IBAN: $.IBAN,
+	available_balance: $.available_balance,
+	balance: $.balance,
+	bank_id: $.bank_id,
+	id: $.id,
+	label: $.label,
+	overdraft: $.overdraft,
+	swift_bic: $.swift_bic,
+	"type": $."type",
+	resource_url: resourceUrl
+}) else []]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route>
+				<banking-as400system-api:get-accounts
+					doc:name="Get Account by SSN from system B" doc:id="3003dbf6-0a1b-4b3e-9ac5-5f4ea0862334"
+					config-ref="Banking_AS400_System_API_Config" ssn="#[vars.ssn]" />
+				<ee:transform doc:name="Transform to Java objectt"
+					doc:id="0214602f-6dbf-4759-bcb3-002e8d9fd51c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var resourceUrl =  "http://" ++ p('http.openbank.system.b.host') ++ ":" ++ p('http.openbank.system.b.port') ++ p('http.openbank.system.b.basePath') ++ "/accounts" ++ "?ssn=" ++ vars.ssn
+---
+if (vars.httpStatus == '200')
+payload map  {
+    IBAN: $.IBAN,
+	available_balance: $.available_balance,
+	balance: $.balance,
+	bank_id: $.bank_id,
+	id: $.id,
+	label: $.label,
+	overdraft: $.overdraft,
+	swift_bic: $.swift_bic,
+	"type": $."type",
+	resource_url: resourceUrl
+} else []]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Prepare JSON output"
+			doc:id="eb4037ec-82f4-45dd-ace2-e8b30c6568c4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log success"
+			doc:id="2f89d2fe-1726-4b41-8b86-54a510050ee9" message="Process GET aggregated accounts finished" />
+
+
+	</flow>
+
+	<flow name="getTransactionsFlow" doc:id="b83ddcce-95a1-4997-a01e-7ac5a2fca166">
+		<ee:transform doc:name="Set ssn variable"
+			doc:id="97d1b92e-2691-4683-afe7-4ee5274007b3">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="ssn"><![CDATA[%dw 2.0
+output application/java
+---
+attributes.queryParams.ssn replace "-" with ""]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather"
+			doc:id="fcac9dd9-da12-49b7-859f-339babaceeb6">
+			<route>
+
+				<http:request method="GET" doc:name="Get User by SSN from system A"
+					doc:id="1414e3a3-5d0e-4685-b233-85e36b644c80" config-ref="HTTP_Request_OpenBank_System_A_Configuration"
+					path="/users">
+					<http:query-params><![CDATA[#[output applicaton/java
+---
+{
+	ssn : vars.ssn
+}]]]></http:query-params>
+				</http:request>
+				<ee:transform doc:name="Get User ID from the response"
+					doc:id="223eb91d-fb62-4232-ac8f-05ba427d69d6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="userID"><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<choice doc:name="Does User exist in system A?" doc:id="cd5bd055-98a7-4246-a271-b386e7c8117c">
+					<when expression="#[sizeOf(payload) != 0]">
+						<http:request method="GET" doc:name="Get Accounts from system A"
+							doc:id="abd04864-e026-4529-91db-84e45161cd88" config-ref="HTTP_Request_OpenBank_System_A_Configuration"
+							path="/users/{id}/transactions">
+							<http:uri-params><![CDATA[#[output applicaton/java
+---
+{
+	id : vars.userID
+}]]]></http:uri-params>
+						</http:request>
+					</when>
+
+					<otherwise>
+						<logger level="INFO" doc:name="Log 'User does not exist in system A'"
+							doc:id="3ece525a-54b0-4e39-9366-c2f5a797a0eb" message="User does not exist in system A." />
+					</otherwise>
+				</choice>
+				<ee:transform doc:name="Transform to Java object"
+					doc:id="c8804ed4-cc79-4900-acef-c431da45816d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var resourceUrl = if (payload != null) "http://" ++ p('http.openbank.system.a.host') ++ ":" ++ p('http.openbank.system.a.port') ++  "/users/" ++ vars.userID ++ "/transactions" else null
+---
+if (payload !=null)
+payload map  ({
+	uuid: $.uuid,
+	id: $.id,
+	this_account: $.this_account,
+	other_account: $.other_account,
+	details: $.details,
+	resource_url: resourceUrl
+}) else []]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+			<route>
+				<banking-as400system-api:get-users
+					doc:name="Get User by SSN from system B" doc:id="9c6b7eeb-5613-4e5d-92fa-53f0aa078ae9"
+					config-ref="Banking_AS400_System_API_Config" ssn="#[vars.ssn]" />
+				<ee:transform doc:name="Get User ID from the response"
+					doc:id="223eb91d-fb62-4232-ac8f-05ba427d69d6">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="userID"><![CDATA[%dw 2.0
+output application/java
+---
+if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+
+				<choice doc:name="Does User exist in system B?" doc:id="db9e3d75-e908-4e48-a3fc-6180b79a9241">
+					<when expression="#[sizeOf(payload) != 0]">
+						<banking-as400system-api:get-transactions-by-id_1
+							doc:name="Get Accounts from system B" doc:id="25fc830f-840d-49e7-990d-1adb39eae1c1"
+							config-ref="Banking_AS400_System_API_Config" id="#[payload]" />
+
+					</when>
+					<otherwise>
+						<logger level="INFO" doc:name="'User does not exist in system B'"
+							doc:id="d924c41e-49a8-4d77-a722-87fbf75f3367" message="User does not exist in system B." />
+					</otherwise>
+				</choice>
+				<ee:transform doc:name="Transform to Java object"
+					doc:id="0214602f-6dbf-4759-bcb3-002e8d9fd51c">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var resourceUrl =  if (payload != null) "http://" ++ p('http.openbank.system.b.host') ++ ":" ++ p('http.openbank.system.b.port') ++ p('http.openbank.system.b.basePath') ++ "/accounts" ++ "?ssn=" ++ vars.ssn else null
+---
+if (payload !=null)
+payload map  {
+	uuid: $.uuid,
+	id: $.id,
+	this_account: $.this_account,
+	other_account: $.other_account,
+	details: $.details,
+	resource_url: resourceUrl
+} else []]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Prepare JSON output"
+			doc:id="eb4037ec-82f4-45dd-ace2-e8b30c6568c4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log success"
+			doc:id="2f89d2fe-1726-4b41-8b86-54a510050ee9" message="Process GET aggregated transactions finished" />
+
+
+	</flow>
+</mule>
