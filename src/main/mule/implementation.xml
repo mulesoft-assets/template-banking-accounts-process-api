@@ -79,12 +79,14 @@ if (payload !=null)
 payload map  ({
     IBAN: $.IBAN,
 	available_balance: $.available_balance,
+	number: $.number,
 	balance: $.balance,
 	bank_id: $.bank_id,
 	id: $.id,
 	label: $.label,
 	overdraft: $.overdraft,
 	swift_bic: $.swift_bic,
+	owners: $.owners,
 	"type": $."type",
 	resource_url: resourceUrl
 }) else []]]></ee:set-payload>
@@ -104,12 +106,14 @@ var resourceUrl =  "http://" ++ p('http.openbank.system.b.host') ++ ":" ++ p('ht
 ---
 if (vars.httpStatus == '200')
 payload map  {
+	id: $.id,
     IBAN: $.IBAN,
 	available_balance: $.available_balance,
+	number: $.number,
 	balance: $.balance,
 	bank_id: $.bank_id,
-	id: $.id,
 	label: $.label,
+	owners: $.owners,
 	overdraft: $.overdraft,
 	swift_bic: $.swift_bic,
 	"type": $."type",
