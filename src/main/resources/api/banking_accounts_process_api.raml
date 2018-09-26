@@ -5,10 +5,27 @@ baseUri: https://localhost:8081/api
 mediaType: application/json
 
 uses: 
-  account: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_account/1.0.0/banking_account.raml
-  common: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_common/1.0.0/banking_common.raml
-  transaction: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_transaction/1.0.0/banking_transaction.raml
-    
+  account: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_account/1.0.2/banking_account.raml
+  common: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_common/1.0.1/banking_common.raml
+  transaction: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_transaction/1.0.2/banking_transaction.raml
+
+types: 
+  AccountDetails:
+    type: account.Account
+    description: detailed account information
+    properties:
+      resource_url:
+        type: string
+        description: address url of account request
+
+  TransactionDetails:
+    type: transaction.Transaction
+    description: detailed transaction information
+    properties:
+      resource_url:
+        type: string
+        description: address url of transaction request      
+
 /accounts/aggregate:
   displayName: Aggregate user accounts
   get:
@@ -21,8 +38,9 @@ uses:
       200:
         body:
           application/json:
-            type: account.Account[]
+            type: AccountDetails[]
             example: !include ./examples/get_accounts_aggregate_example.raml
+
 /transactions/aggregate:
   displayName: Aggregate user transactions
   get:
@@ -35,5 +53,5 @@ uses:
       200:
         body:
           application/json:
-            type: transaction.Transaction[]
+            type: TransactionDetails[]
             example: !include ./examples/get_transactions_aggregate_example.raml

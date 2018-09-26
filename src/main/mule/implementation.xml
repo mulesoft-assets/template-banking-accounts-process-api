@@ -79,12 +79,14 @@ if (payload !=null)
 payload map  ({
     IBAN: $.IBAN,
 	available_balance: $.available_balance,
+	number: $.number,
 	balance: $.balance,
 	bank_id: $.bank_id,
 	id: $.id,
 	label: $.label,
 	overdraft: $.overdraft,
 	swift_bic: $.swift_bic,
+	owners: $.owners,
 	"type": $."type",
 	resource_url: resourceUrl
 }) else []]]></ee:set-payload>
@@ -104,12 +106,14 @@ var resourceUrl =  "http://" ++ p('http.openbank.system.b.host') ++ ":" ++ p('ht
 ---
 if (vars.httpStatus == '200')
 payload map  {
+	id: $.id,
     IBAN: $.IBAN,
 	available_balance: $.available_balance,
+	number: $.number,
 	balance: $.balance,
 	bank_id: $.bank_id,
-	id: $.id,
 	label: $.label,
+	owners: $.owners,
 	overdraft: $.overdraft,
 	swift_bic: $.swift_bic,
 	"type": $."type",
@@ -125,7 +129,7 @@ payload map  {
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+payload[0].payload ++ payload[1].payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Log success"
@@ -269,7 +273,7 @@ payload map  {
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+payload[0].payload ++ payload[1].payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Log success"
