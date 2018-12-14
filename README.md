@@ -84,6 +84,8 @@ Detailed list with examples:
 
 ### API auto-discovery
 + api.id `123456`
++ anypoint.platform.client_id `your_client_id`
++ anypoint.platform.client_secret `your_client_secret`
 
 ### HTTP System A configuration
 + http.openbank.system.a.host `checking.example.com`

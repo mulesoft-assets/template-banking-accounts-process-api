@@ -5,9 +5,9 @@ baseUri: https://localhost:8081/api
 mediaType: application/json
 
 uses: 
-  account: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_account/1.0.2/banking_account.raml
-  common: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_common/1.0.1/banking_common.raml
-  transaction: /exchange_modules/4d302cca-3f9a-4257-8ce4-20cf81a72e47/banking_transaction/1.0.2/banking_transaction.raml
+  account: exchange_modules/org.mule.templates/banking-account/1.0.0/banking_account.raml
+  common: exchange_modules/org.mule.templates/banking-common/1.0.1/banking_common.raml
+  transaction: exchange_modules/org.mule.templates/banking-transaction/1.0.0/banking_transaction.raml
 
 types: 
   AccountDetails:
@@ -27,8 +27,8 @@ types:
         description: address url of transaction request      
 
 /accounts/aggregate:
-  displayName: Aggregate user accounts
   get:
+    displayName: Aggregate user accounts
     description: Return aggregated Accounts of user specified by SSN  
     queryParameters:
       ssn:
@@ -39,11 +39,11 @@ types:
         body:
           application/json:
             type: AccountDetails[]
-            example: !include ./examples/get_accounts_aggregate_example.raml
+            example: !include examples/get_accounts_aggregate_example.raml
 
 /transactions/aggregate:
-  displayName: Aggregate user transactions
   get:
+    displayName: Aggregate user transactions  
     description: Return aggregated Transactions of user specified by SSN  
     queryParameters:
       ssn:
@@ -54,4 +54,4 @@ types:
         body:
           application/json:
             type: TransactionDetails[]
-            example: !include ./examples/get_transactions_aggregate_example.raml
+            example: !include examples/get_transactions_aggregate_example.raml
