@@ -94,9 +94,7 @@ payload map  ({
 				</ee:transform>
 			</route>
 			<route>
-				<banking-as400system-api:get-accounts
-					doc:name="Get Account by SSN from system B" doc:id="3003dbf6-0a1b-4b3e-9ac5-5f4ea0862334"
-					config-ref="Banking_AS400_System_API_Config" ssn="#[vars.ssn]" />
+				<banking-as400system-api:retrieve-all-accounts doc:name="Get Account by SSN from system B" doc:id="459a11fd-39dd-4ad6-a1b2-51d892c67a31" ssn="#[vars.ssn]" config-ref="Banking_AS400_System_API_Config"/>
 				<ee:transform doc:name="Transform to Java objectt"
 					doc:id="0214602f-6dbf-4759-bcb3-002e8d9fd51c">
 					<ee:message>
@@ -147,7 +145,7 @@ payload[0].payload ++ payload[1].payload]]></ee:set-payload>
 				<ee:set-variable variableName="ssn"><![CDATA[%dw 2.0
 output application/java
 ---
-attributes.queryParams.ssn replace "-" with ""]]></ee:set-variable>
+attributes.queryParams.ssn replace "-" with "" ]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<scatter-gather doc:name="Scatter-Gather"
@@ -216,7 +214,7 @@ payload map  ({
 				</ee:transform>
 			</route>
 			<route>
-				<banking-as400system-api:get-users
+				<banking-as400system-api:retrieve-all-users
 					doc:name="Get User by SSN from system B" doc:id="9c6b7eeb-5613-4e5d-92fa-53f0aa078ae9"
 					config-ref="Banking_AS400_System_API_Config" ssn="#[vars.ssn]" />
 				<ee:transform doc:name="Get User ID from the response"
@@ -237,10 +235,9 @@ if (sizeOf(payload)>0) payload.id[0] else null]]></ee:set-variable>
 
 				<choice doc:name="Does User exist in system B?" doc:id="db9e3d75-e908-4e48-a3fc-6180b79a9241">
 					<when expression="#[sizeOf(payload) != 0]">
-						<banking-as400system-api:get-transactions-by-id_1
+						<banking-as400system-api:retrieve-all-account-transactions
 							doc:name="Get Accounts from system B" doc:id="25fc830f-840d-49e7-990d-1adb39eae1c1"
 							config-ref="Banking_AS400_System_API_Config" id="#[payload]" />
-
 					</when>
 					<otherwise>
 						<logger level="INFO" doc:name="'User does not exist in system B'"

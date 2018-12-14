@@ -5,15 +5,14 @@
 	<parent>
 		<groupId>org.mule.templates</groupId>
 		<artifactId>templates-tooling-parent-pom</artifactId>
-		<version>2.1.4</version>
+		<version>2.1.13</version>
 	</parent>
-	<properties>
-		<banking.as400.system.api.version>2.0.1</banking.as400.system.api.version>
-	</properties>
+
 	<artifactId>template-banking-accounts-process-api</artifactId>
-	<version>2.1.1-SNAPSHOT</version>
+	<version>2.1.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 	<name>template-banking-accounts-process-api</name>
+	
 	<dependencies>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
@@ -25,10 +24,11 @@
 			<artifactId>mule-apikit-module</artifactId>
 			<classifier>mule-plugin</classifier>
 		</dependency>
+
     	<dependency>
-            <groupId>4d302cca-3f9a-4257-8ce4-20cf81a72e47</groupId>
-            <artifactId>mule-plugin-banking_as400_system_api</artifactId>
-            <version>${banking.as400.system.api.version}</version>
+            <groupId>org.mule.templates</groupId>
+            <artifactId>mule-plugin-catalyst-banking-as400-system-api</artifactId>
+            <version>2.0.0</version>
             <classifier>mule-plugin</classifier>
         </dependency>
     </dependencies>

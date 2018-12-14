@@ -11,6 +11,9 @@ http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/banking-as400system-api http://www.mulesoft.org/schema/mule/banking-as400system-api/current/mule-banking-as400system-api.xsd
 http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	
+	<global-property doc:name="Global Property" name="mule.env"
+		value="dev" />
 	<http:listener-config name="banking_accounts_process_api-httpListenerConfig">
 		<http:listener-connection host="0.0.0.0"
 			port="${http.port}" />
@@ -33,8 +36,6 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 		doc:id="3f8e1fb3-5d4e-4016-a78a-5dc6d213111d" file="mule.${mule.env}.properties" />
 	<configuration-properties doc:name="Configuration properties"
 		doc:id="7a61e8bb-6e38-4be7-b8a7-c9e552ef8db1" file="common.properties" />
-	<global-property doc:name="Global Property" name="mule.env"
-		value="dev" />
 	<api-gateway:autodiscovery apiId="${api.id}" doc:name="API Autodiscovery" doc:id="9fc22769-6c75-42b4-a7be-4a8f8f2dbd7a" flowRef="banking_accounts_process_api-main" />
 		
 	
