@@ -95,14 +95,14 @@ payload map  ({
 			</route>
 			<route>
 				<banking-as400system-api:retrieve-all-accounts doc:name="Get Account by SSN from system B" doc:id="459a11fd-39dd-4ad6-a1b2-51d892c67a31" ssn="#[vars.ssn]" config-ref="Banking_AS400_System_API_Config"/>
-				<ee:transform doc:name="Transform to Java objectt"
+				<ee:transform doc:name="Transform to Java object"
 					doc:id="0214602f-6dbf-4759-bcb3-002e8d9fd51c">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/java
 var resourceUrl =  "http://" ++ p('http.openbank.system.b.host') ++ ":" ++ p('http.openbank.system.b.port') ++ p('http.openbank.system.b.basePath') ++ "/accounts" ++ "?ssn=" ++ vars.ssn
 ---
-if (vars.httpStatus == '200')
+if (attributes.statusCode == 200)
 payload map  {
 	id: $.id,
     IBAN: $.IBAN,
