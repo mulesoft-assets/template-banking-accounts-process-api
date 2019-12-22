@@ -14,7 +14,7 @@
 	<name>template-banking-accounts-process-api</name>
 
 	<properties>
-		<mule.tools.version>1.2</mule.tools.version>
+		<mule.tools.version>1.8</mule.tools.version>
 		<skip.readme.generation>true</skip.readme.generation>
 	</properties>
 
